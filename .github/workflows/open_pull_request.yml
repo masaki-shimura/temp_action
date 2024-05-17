@@ -1,0 +1,36 @@
+name: Get Open Pull Requests
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  get-open-prs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Get Open Pull Requests
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          curl -H "Authorization: token $GH_TOKEN" \
+               "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open" \
+               -o pr_list.json
+
+      - name: Filter Non-Draft PRs
+        id: filter_non_draft_prs
+        run: |
+          non_draft_prs=$(jq '[.[] | select(.draft | not)]' pr_list.json)
+          echo "$non_draft_prs" > non_draft_pr_list.json
+          pr_titles=$(echo "$non_draft_prs" | jq -r '.[].title')
+          echo "::set-output name=pr_titles::$pr_titles"
+
+      - name: Display PR Titles
+        run: |
+          echo "Open Non-Draft PR Titles: ${{ steps.filter_non_draft_prs.outputs.pr_titles }}"
