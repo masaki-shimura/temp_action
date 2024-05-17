@@ -35,25 +35,16 @@ jobs:
           PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
 
           curl -H "Authorization: token $GH_TOKEN" \
-               "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open&draft=false" \
+               "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open" \
                -o pr_list.json
 
-          curl -H "Authorization: token $GH_TOKEN" \
-               "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open&draft=true" \
-               -o pr_list_on_draft.json
-
-          # echo "pr_list.json ---------------------"
-          # cat pr_list.json
-
-          echo "pr_list_on_draft.json ---------------------"
-          cat pr_list_on_draft.json
-          
           # JSONファイルからプルリクエストのタイトルだけを抽出してログに出力
           echo "ドラフトプルリクが無効な物を出力"
-          jq -r 'map(select(.locked == true)) | .[].title' pr_list.json
+          non_draft_prs=$(jq '[.[] | select(.draft | not)]' pr_list.json)
+          echo "$non_draft_prs" > non_draft_pr_list.json
+          pr_titles=$(echo "$non_draft_prs" | jq -r '.[].title')
+          echo "::set-output name=pr_titles::$pr_titles"
 
-          echo "ドラフトプルリクが有効な物を出力"
-          jq -r '.[].title' pr_list_on_draft.json
           
           # 参照情報の出力
           echo "TOKEN: $TOKEN"
@@ -65,17 +56,10 @@ jobs:
           echo ${{ steps.check_unapproved_prs.outputs.pr_list }}
           
           # PRの数を取得し「count」に格納する
-          # echo "count=$(jq '. | length' pr_list.json)" >> "$GITHUB_OUTPUT"
-          echo "count=$(jq '. | length' pr_list_on_draft.json)" >> "$GITHUB_OUTPUT"
-
+          echo "count=$(jq '. | length' pr_list.json)" >> "$GITHUB_OUTPUT"
 
           # PRのタイトルの抽出 一行にまとめるバージョン
-          # echo "pr_title=$(gh pr list --state=open --json=title --jq='.[] | .title' | tr '\n' '$\n')" >> "$GITHUB_OUTPUT"
-          # echo "pr_title=$(gh pr list --state=open --json=title --jq='.[] | .title')" >> "$GITHUB_OUTPUT"
-          # echo "pr_title=$(gh pr list --state=open --json=title,url --jq='.[] | "\(.title) \(.url)" >> "$GITHUB_OUTPUT"
-          # echo "pr_title=$(jq -r '.[].title' pr_list.json)" >> "$GITHUB_OUTPUT"
-          # echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
-          echo "pr_title=$(jq -r '.[].title' pr_list_on_draft.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
+          echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
 
       # PRがある場合の処理
       - name: Exist PR
@@ -88,16 +72,6 @@ jobs:
           echo -e"Open PR Titles: ${{ steps.check_unapproved_prs.outputs.pr_title }}"
           echo "----------------------------------------------"
 
-          # echo "json データ様に格納してログに出力します"
-          # ---- 失敗例 ----
-          # send_data="{\"body\": \"{{steps.check_unapproved_prs.outputs.pr_title}}\"}"
-          # echo "$send_data"
-          # send_data2="{\"body\": \"{steps.check_unapproved_prs.outputs.pr_title}\"}"
-          # echo "$send_data2"
-          # send_data3="{\"body\": \"steps.check_unapproved_prs.outputs.pr_title\"}"
-          # echo "$send_data3"
-          # send_data4="{\"body\": \"$steps.check_unapproved_prs.outputs.pr_title\"}"
-          # echo "$send_data4"
           # ---- 正しくJson化出来ている物 ----
           send_data5="{\"body\": \"格納データ：${{steps.check_unapproved_prs.outputs.pr_title}} \n以上です \"}"
           echo "$send_data5"
