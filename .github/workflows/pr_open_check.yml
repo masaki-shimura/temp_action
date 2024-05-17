@@ -42,8 +42,8 @@ jobs:
                "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open&draft=true" \
                -o pr_list_on_draft.json
 
-          echo "pr_list.json ---------------------"
-          cat pr_list.json
+          # echo "pr_list.json ---------------------"
+          # cat pr_list.json
 
           echo "pr_list_on_draft.json ---------------------"
           cat pr_list_on_draft.json
