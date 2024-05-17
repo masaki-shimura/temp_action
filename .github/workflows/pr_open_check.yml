@@ -56,7 +56,8 @@ jobs:
           echo ${{ steps.check_unapproved_prs.outputs.pr_list }}
           
           # PRの数を取得し「count」に格納する
-          echo "count=$(jq '. | length' pr_list.json)" >> "$GITHUB_OUTPUT"
+          # echo "count=$(jq '. | length' pr_list.json)" >> "$GITHUB_OUTPUT"
+          echo "count=$(echo "$pr_titles" | wc -l)" >> "$GITHUB_OUTPUT"
 
           # PRのタイトルの抽出 一行にまとめるバージョン
           echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
