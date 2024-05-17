@@ -60,7 +60,7 @@ jobs:
 
           # PRのタイトルの抽出 一行にまとめるバージョン
           # echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
-          echo "pr_title=$(cat pr_titles | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
+          echo "pr_titles=$(echo "$pr_titles" | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
 
       # PRがある場合の処理
       - name: Exist PR
@@ -70,11 +70,11 @@ jobs:
           echo "count: ${{steps.check_unapproved_prs.outputs.count}}"
           
           echo "----------------------------------------------"
-          echo -e"Open PR Titles: ${{ steps.check_unapproved_prs.outputs.pr_title }}"
+          echo -e"Open PR Titles: ${{ steps.check_unapproved_prs.outputs.pr_titles }}"
           echo "----------------------------------------------"
 
           # ---- 正しくJson化出来ている物 ----
-          send_data5="{\"body\": \"格納データ：${{steps.check_unapproved_prs.outputs.pr_title}} \n以上です \"}"
+          send_data5="{\"body\": \"格納データ：${{steps.check_unapproved_prs.outputs.pr_titles}} \n以上です \"}"
           echo "$send_data5"
           
       # PRがない場合の処理
