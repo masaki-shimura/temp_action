@@ -1,0 +1,42 @@
+name: Get PR Titles
+
+on:
+  # 手動実行用
+  workflow_dispatch:
+jobs:
+  get-pr-titles:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Get PR Titles using GitHub Script
+      id: get-pr-titles
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const { data: pulls } = await github.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'open'
+          });
+
+          const nonDraftPRs = pulls.filter(pr => !pr.draft);
+          const prTitles = nonDraftPRs.map(pr => pr.title).join('\n');
+
+          console.log('PR Titles:', prTitles);
+
+          // Set the outputs
+          return {
+            pr_titles: prTitles,
+            count: nonDraftPRs.length
+          };
+
+    - name: Output PR Titles
+      run: |
+        echo "PR Titles: ${{ steps.get-pr-titles.outputs.pr_titles }}"
+        echo "PR Count: ${{ steps.get-pr-titles.outputs.count }}"
+
+    - name: Set PR Titles as Environment Variable
+      run: echo "PR_TITLES=${{ steps.get-pr-titles.outputs.pr_titles }}" >> $GITHUB_ENV
