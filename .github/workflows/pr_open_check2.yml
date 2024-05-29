@@ -1,0 +1,87 @@
+name: workflow_pr_open_check_notcheckout_demo
+
+on:
+  # 手動実行用
+  workflow_dispatch:
+    
+  # 月曜日から金曜日の10時に実行
+  # [ 分(0-59) ][ 時(0-23) ][ 日(1-31) ][ 月(1-12) ][ 曜日(0-6 or SUN-SAT) ]
+  # ※タイムゾーンはUTC時刻(協定世界時)なので日本時刻に合わせる為時刻を「-9」する
+  schedule:
+    - cron: '0 0 * * 1-5'#15時にイベントが作動
+
+jobs:
+  pr_open_check_demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Git Hubリポジトリ参照用にトークン情報を設定しておく
+    # これがないと「gh pr list」等が使えない
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+    steps:
+      - name: Start Jobs Log
+        run: echo "pr_open_check_demoを実行しました"
+
+        # PR 情報の抽出処理
+      - name: Check for unapproved PRs
+        id: check_unapproved_prs
+        run: |
+          TOKEN=$GITHUB_TOKEN
+          OWNER=$GITHUB_REPOSITORY_OWNER
+          REPO=$GITHUB_REPOSITORY
+          REPO_NAME=${{ github.event.repository.name }}
+          PR_NUMBER=$(jq --raw-output .number "$GITHUB_EVENT_PATH")
+
+          curl -H "Authorization: token $GH_TOKEN" \
+               "https://api.github.com/repos/$OWNER/$REPO_NAME/pulls?state=open" \
+               -o pr_list.json
+
+          # JSONファイルからプルリクエストのタイトルだけを抽出してログに出力
+          echo "ドラフトプルリクが無効な物を出力"
+          non_draft_prs=$(jq '[.[] | select(.draft | not)]' pr_list.json)
+          echo "$non_draft_prs" > non_draft_pr_list.json
+          LF=$'\n'
+          pr_titles=$(echo "$non_draft_prs" | jq -r --arg lf "$LF" '.[].title + $lf')
+          echo pr_titles="$pr_titles"
+
+          
+          # 参照情報の出力
+          echo "TOKEN: $TOKEN"
+          echo "OWNER: $OWNER"
+          echo "REPO: $REPO"
+          echo "PR_NUMBER: $PR_NUMBER"
+
+          # GitHubのプルリク一覧を出力 し 環境変数に入れる
+          echo ${{ steps.check_unapproved_prs.outputs.pr_list }}
+          
+          # PRの数を取得し「count」に格納する
+          echo "count=$(echo "$pr_titles" | wc -l)" >> "$GITHUB_OUTPUT"
+
+          # PRのタイトルの抽出 一行にまとめるバージョン
+          echo "pr_titles=$(echo "$pr_titles")" >> "$GITHUB_OUTPUT"
+
+      # PRがある場合の処理
+      - name: Exist PR
+        if: ${{ steps.check_unapproved_prs.outputs.count != 0 }}
+        run: |
+          echo "プルリクリスト が前日のPRが残っています"
+          echo "count: ${{steps.check_unapproved_prs.outputs.count}}"
+          
+          echo "----------------------------------------------"
+          echo -e"Open PR Titles: ${{ steps.check_unapproved_prs.outputs.pr_titles }}"
+          echo "----------------------------------------------"
+
+          # ---- 正しくJson化出来ている物 ----
+          send_data5="{\"body\": \"格納データ：${{steps.check_unapproved_prs.outputs.pr_titles}} \n以上です \"}"
+          echo "$send_data5"
+          
+      # PRがない場合の処理
+      - name: Not Exist PR
+        if: ${{ steps.check_unapproved_prs.outputs.count == 0 }}
+        run: |
+          echo "プルリクリスト はありません"
+  
+      - name: Finish Jobs Log
+        run: echo "pr_open_check_demoが完了しました"
