@@ -1,4 +1,4 @@
-name: workflow_pr_open_check_notcheckout_demo
+name: pr_open_check
 
 on:
   # 手動実行用
