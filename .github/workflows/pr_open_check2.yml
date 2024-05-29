@@ -42,7 +42,7 @@ jobs:
           echo "ドラフトプルリクが無効な物を出力"
           non_draft_prs=$(jq '[.[] | select(.draft | not)]' pr_list.json)
           echo "$non_draft_prs" > non_draft_pr_list.json
-          LF=$'EOF'
+          LF=$''
           pr_titles=$(echo "$non_draft_prs" | jq -r --arg lf "$LF" '.[].title + $lf')
           echo pr_titles="$pr_titles">> "$GITHUB_OUTPUT"
 
