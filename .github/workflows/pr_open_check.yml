@@ -43,7 +43,7 @@ jobs:
           non_draft_prs=$(jq '[.[] | select(.draft | not)]' pr_list.json)
           echo "$non_draft_prs" > non_draft_pr_list.json
           pr_titles=$(echo "$non_draft_prs" | jq -r '.[].title')
-          echo "pr_titles=$pr_titles"
+          echo pr_titles="$pr_titles"
 
           
           # 参照情報の出力
