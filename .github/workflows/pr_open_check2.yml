@@ -44,7 +44,7 @@ jobs:
           echo "$non_draft_prs" > non_draft_pr_list.json
           LF=$'\n'
           pr_titles=$(echo "$non_draft_prs" | jq -r --arg lf "$LF" '.[].title + $lf')
-          echo pr_titles="$pr_titles"
+          echo pr_titles="$pr_titles">> "$GITHUB_OUTPUT"
 
           
           # 参照情報の出力
@@ -58,9 +58,6 @@ jobs:
           
           # PRの数を取得し「count」に格納する
           echo "count=$(echo "$pr_titles" | wc -l)" >> "$GITHUB_OUTPUT"
-
-          # PRのタイトルの抽出 一行にまとめるバージョン
-          echo "pr_titles=$(echo "$pr_titles")" >> "$GITHUB_OUTPUT"
 
       # PRがある場合の処理
       - name: Exist PR
