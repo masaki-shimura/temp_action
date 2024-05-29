@@ -51,9 +51,6 @@ jobs:
           echo "OWNER: $OWNER"
           echo "REPO: $REPO"
           echo "PR_NUMBER: $PR_NUMBER"
-
-          # GitHubのプルリク一覧を出力 し 環境変数に入れる
-          echo ${{ steps.check_unapproved_prs.outputs.pr_list }}
           
           # PRの数を取得し「count」に格納する
           echo "count=$(echo "$pr_titles" | wc -l)" >> "$GITHUB_OUTPUT"
