@@ -15,4 +15,3 @@ jobs:
           LF=$'\n'
           echo "test2${LF}test2"
           echo "test3$"LF"test3"
-          echo "test2${{LF}}test2"
