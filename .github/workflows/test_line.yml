@@ -1,0 +1,17 @@
+name: test_line
+
+on:
+  # 手動実行用
+  workflow_dispatch:
+jobs:
+  pr_open_check_demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check for unapproved PRs
+        id: check_unapproved_prs
+        run: |
+          echo "test1\ntest1"
+          LF=$'\n'
+          echo "test2${LF}test2"
+          echo "test3$"LF"test3"
