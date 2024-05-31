@@ -62,7 +62,8 @@ jobs:
           # echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
           #LF=$'\n'
           #echo "pr_titles=$(echo -e "$pr_titles" | sed ':a;N;$!ba;s/\n/ ${LF} /g')" >> "$GITHUB_OUTPUT"
-          echo -e "pr_titles=$(echo -e "$pr_titles" | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
+          echo -e "pr_titles=$(echo -e "$pr_titles" | sed ':a;N;$!ba;s/\n/ ${LF} /g')" >> "$GITHUB_OUTPUT"
+          #echo -e "pr_titles=$(echo -e "$pr_titles" | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"#エラーが発生
       # PRがある場合の処理
       - name: Exist PR
         if: ${{ steps.check_unapproved_prs.outputs.count != 0 }}
