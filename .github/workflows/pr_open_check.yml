@@ -77,7 +77,7 @@ jobs:
 
           # ---- 正しくJson化出来ている物 ----
           send_data5="{\"body\": \"格納データ：${{steps.check_unapproved_prs.outputs.pr_titles}} \n以上です \"}"
-          echo "$send_data5"
+          echo -e "$send_data5"
           
       # PRがない場合の処理
       - name: Not Exist PR
