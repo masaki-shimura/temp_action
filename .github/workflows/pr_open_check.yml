@@ -60,7 +60,7 @@ jobs:
 
           # PRのタイトルの抽出 一行にまとめるバージョン
           # echo "pr_title=$(jq -r '.[].title' pr_list.json | sed ':a;N;$!ba;s/\n/\\n/g')" >> "$GITHUB_OUTPUT"
-          LF=$'\n'
+          LF=$'\r\n'
           echo "pr_titles=$(echo "$pr_titles" | sed ':a;N;$!ba;s/\n/ ${LF} /g')" >> "$GITHUB_OUTPUT"
 
       # PRがある場合の処理
